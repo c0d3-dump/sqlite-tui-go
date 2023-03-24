@@ -4,15 +4,23 @@ import (
 	"database/sql"
 	"log"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 type Database struct {
 	db *sql.DB
 }
 
+type Table struct {
+	name    string
+	dtype   string
+	notnull bool
+	dval    any
+	pk      bool
+}
+
 func (d *Database) InitDatabase(database string) {
-	db, err := sql.Open("sqlite3", database)
+	db, err := sql.Open("sqlite", database)
 
 	if err != nil {
 		log.Println(database)
@@ -44,8 +52,8 @@ func (d Database) ExecStatement(statement string, args ...any) sql.Result {
 	return out
 }
 
-func (d Database) ExecQuery(query string) *sql.Rows {
-	rows, err := d.db.Query(query)
+func (d Database) ExecQueryRows(query string, args ...any) *sql.Rows {
+	rows, err := d.db.Query(query, args...)
 
 	if err != nil {
 		log.Println(query)
@@ -53,4 +61,16 @@ func (d Database) ExecQuery(query string) *sql.Rows {
 	}
 
 	return rows
+}
+
+func (d Database) ExecQueryRow(query string, args ...any) *sql.Row {
+	row := d.db.QueryRow(query, args...)
+
+	err := row.Err()
+	if err != nil {
+		log.Panicln(query)
+		log.Fatal("error quering : ", err)
+	}
+
+	return row
 }
