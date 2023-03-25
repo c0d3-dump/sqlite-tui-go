@@ -11,14 +11,6 @@ type Database struct {
 	db *sql.DB
 }
 
-type Table struct {
-	name    string
-	dtype   string
-	notnull bool
-	dval    any
-	pk      bool
-}
-
 func (d *Database) InitDatabase(database string) {
 	db, err := sql.Open("sqlite", database)
 

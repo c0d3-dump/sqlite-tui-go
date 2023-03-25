@@ -1,6 +1,14 @@
 package views
 
-import tea "github.com/charmbracelet/bubbletea"
+import (
+	tea "github.com/charmbracelet/bubbletea"
+)
+
+const (
+	height_offset  = 5
+	width_offset   = 2
+	section_offset = 4
+)
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -8,23 +16,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-		case "down", "j":
-			if m.cursor < len(m.choices)-1 {
-				m.cursor++
-			}
-		case "enter":
-			_, ok := m.selected[m.cursor]
-			if ok {
-				delete(m.selected, m.cursor)
-			} else {
-				m.selected[m.cursor] = struct{}{}
-			}
 		}
+	case tea.WindowSizeMsg:
+		top_section.Width(msg.Width - width_offset*2 - button_style.GetWidth())
+		query_section.Width(msg.Width - width_offset*2 - button_style.GetWidth())
+		left_section.Height(msg.Height - height_offset)
+		left_section.Width(msg.Width / section_offset)
+		right_section.Height(msg.Height - height_offset)
+		right_section.Width(msg.Width - left_section.GetWidth() - width_offset*2)
+		base_section.Height(msg.Height)
+		base_section.Width(msg.Width)
+		create_column_section.Width(msg.Width / 2)
+		create_column_section.Height(msg.Height / 2)
+		return m, nil
 	}
-
 	return m, nil
 }

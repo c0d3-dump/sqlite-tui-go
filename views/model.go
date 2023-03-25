@@ -1,15 +1,47 @@
 package views
 
+type focusedView int
+
 type Model struct {
-	choices  []string
-	cursor   int
-	selected map[int]struct{}
+	cursor int
+	tables []Table
 }
 
-func InitialModel() Model {
+type Table struct {
+	cursor  int
+	columns []string
+	ids     []string
+	data    TableData
+}
+
+type TableData struct {
+	cursor int
+	data   map[string]string
+}
+
+func NewModel() Model {
 	return Model{
-		choices:  []string{"Buy carrots", "Buy celery", "Buty kohlrabi"},
-		selected: make(map[int]struct{}),
-		cursor:   0,
+		cursor: -1,
+		tables: []Table{},
+	}
+}
+
+type CreateTable struct {
+	name    string
+	columns []CreateColumn
+}
+
+type CreateColumn struct {
+	name    string
+	dtype   string
+	notnull bool
+	dval    any
+	pk      bool
+}
+
+func newCreateTable() CreateTable {
+	return CreateTable{
+		name:    "",
+		columns: []CreateColumn{},
 	}
 }

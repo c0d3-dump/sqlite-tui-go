@@ -2,14 +2,22 @@ package database
 
 import "fmt"
 
-func (d Database) TableInfo(name string) []Table {
+type TableInfo struct {
+	name    string
+	dtype   string
+	notnull bool
+	dval    any
+	pk      bool
+}
+
+func (d Database) GetTableInfo(name string) []TableInfo {
 	q := fmt.Sprintf("PRAGMA table_info(%s)", name)
 
 	rows := d.ExecQueryRows(q)
 
-	table_map := []Table{}
+	table_map := []TableInfo{}
 	for rows.Next() {
-		t := Table{}
+		t := TableInfo{}
 		var cid int
 		rows.Scan(&cid, &t.name, &t.dtype, &t.notnull, &t.dval, &t.pk)
 		table_map = append(table_map, t)
