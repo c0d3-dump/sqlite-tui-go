@@ -1,10 +1,17 @@
 package views
 
-type focusedView int
+import (
+	"github.com/charmbracelet/bubbles/cursor"
+	"github.com/charmbracelet/bubbles/textinput"
+)
 
 type Model struct {
-	cursor int
-	tables []Table
+	cursor       []int
+	textInput    textinput.Model
+	tables       []Table
+	tableData    TableData
+	createTable  CreateTable
+	createColumn CreateColumn
 }
 
 type Table struct {
@@ -20,28 +27,38 @@ type TableData struct {
 }
 
 func NewModel() Model {
+	ti := textinput.New()
+	ti.Focus()
+	ti.Cursor.SetMode(cursor.CursorStatic)
+
 	return Model{
-		cursor: -1,
-		tables: []Table{},
+		cursor:    []int{0, 0, 0},
+		textInput: ti,
+		tables:    []Table{},
+		tableData: TableData{},
+		createTable: CreateTable{
+			cursor: 0,
+			name:   "user",
+			columns: []CreateColumn{
+				{name: "id", dtype: "INT", pk: true},
+				{name: "name", dtype: "TEXT"},
+			},
+		},
+		createColumn: CreateColumn{},
 	}
 }
 
 type CreateTable struct {
+	cursor  int
 	name    string
 	columns []CreateColumn
 }
 
 type CreateColumn struct {
+	cursor  int
 	name    string
 	dtype   string
 	notnull bool
-	dval    any
+	dval    string
 	pk      bool
-}
-
-func newCreateTable() CreateTable {
-	return CreateTable{
-		name:    "",
-		columns: []CreateColumn{},
-	}
 }

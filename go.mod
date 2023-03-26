@@ -8,8 +8,11 @@ require (
 	modernc.org/sqlite v1.21.0
 )
 
+require github.com/atotto/clipboard v0.1.4 // indirect
+
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
+	github.com/charmbracelet/bubbles v0.15.0
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/google/uuid v1.3.0 // indirect

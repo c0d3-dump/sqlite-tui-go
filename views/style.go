@@ -6,12 +6,12 @@ var (
 	top_section = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("62")).
-			AlignHorizontal(lipgloss.Center)
+			AlignHorizontal(lipgloss.Left)
 
 	left_section = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("62")).
-			AlignHorizontal(lipgloss.Center)
+			AlignHorizontal(lipgloss.Left)
 
 	right_section = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
@@ -37,4 +37,7 @@ var (
 	query_section = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("62"))
+
+	text_style = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#00ff00"))
 )
