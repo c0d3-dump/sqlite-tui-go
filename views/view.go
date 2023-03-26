@@ -34,7 +34,7 @@ func base_view() string {
 	return base_section.Render(
 		lipgloss.NewStyle().
 			AlignHorizontal(lipgloss.Left).
-			Render("There are no tables in db,\nPlease create one by pressing c\n - c : create table\n - v : view table data\n - / : query tables\n"),
+			Render("There are no tables in db,\nPlease create one by pressing ctrl + c\n - ctrl + c : create table\n - ctrl + v : view table data\n - / : query tables\n"),
 	)
 }
 
@@ -120,13 +120,6 @@ func create_table_view(m Model) string {
 			),
 		),
 	)
-}
-
-func boolToString(b bool) string {
-	if b {
-		return "true"
-	}
-	return "false"
 }
 
 func create_column_view(m Model) string {
@@ -215,4 +208,11 @@ func createColumnListSelect(m Model, keys []string) string {
 		lipgloss.Left,
 		temp...,
 	)
+}
+
+func boolToString(b bool) string {
+	if b {
+		return "true"
+	}
+	return "false"
 }
