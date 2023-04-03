@@ -18,14 +18,12 @@ func (m Model) View() string {
 	case 2:
 		switch m.cursor[1] {
 		case 0:
-			return table_view()
+			return query_view(m)
 		case 1:
 			return select_table_view()
 		case 2:
 			return add_row_view()
 		}
-	case 3:
-		return query_view(m)
 	}
 	return base_view()
 }
@@ -34,35 +32,7 @@ func base_view() string {
 	return base_section.Render(
 		lipgloss.NewStyle().
 			AlignHorizontal(lipgloss.Left).
-			Render("There are no tables in db,\nPlease create one by pressing ctrl + c\n - ctrl + c : create table\n - ctrl + v : view table data\n - / : query tables\n"),
-	)
-}
-
-func table_view() string {
-	return lipgloss.JoinVertical(
-		lipgloss.Top,
-		lipgloss.JoinHorizontal(
-			lipgloss.Left,
-			top_section.Render("test_table"),
-			button_style.Render("SUBMIT"),
-		),
-		lipgloss.JoinHorizontal(
-			lipgloss.Left,
-			left_section.Render("ids"),
-			right_section.Render("data"),
-		),
-	)
-}
-
-func select_table_view() string {
-	return base_section.Render(
-		create_column_section.Render("select table"),
-	)
-}
-
-func add_row_view() string {
-	return base_section.Render(
-		create_column_section.Render("add row"),
+			Render("There are no tables in db,\nPlease create one by pressing ctrl + t\n - ctrl + t : create table\n - ctrl + q : query tables\n"),
 	)
 }
 
@@ -146,20 +116,55 @@ func create_column_view(m Model) string {
 }
 
 func query_view(m Model) string {
+	var t string
+
+	if m.cursor[2] == 0 {
+		t = m.textInput.View()
+	} else {
+		t = m.queryText
+	}
+
+	highlight(m.cursor[2], []lipgloss.Style{
+		top_section,
+		left_section,
+		right_section,
+		button_style,
+	})
+
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
 		lipgloss.JoinHorizontal(
 			lipgloss.Left,
-			query_section.Render(
-				m.textInput.View(),
-			),
+			top_section.Render(t),
 			button_style.Render("SUBMIT"),
 		),
 		lipgloss.JoinHorizontal(
 			lipgloss.Left,
-			left_section.Render("index"),
-			right_section.Render("data"),
+			left_section.Render(
+				lipgloss.JoinVertical(
+					lipgloss.Top,
+					"index",
+				),
+			),
+			right_section.Render(
+				lipgloss.JoinVertical(
+					lipgloss.Top,
+					"data",
+				),
+			),
 		),
+	)
+}
+
+func select_table_view() string {
+	return base_section.Render(
+		create_column_section.Render("select table"),
+	)
+}
+
+func add_row_view() string {
+	return base_section.Render(
+		create_column_section.Render("add row"),
 	)
 }
 

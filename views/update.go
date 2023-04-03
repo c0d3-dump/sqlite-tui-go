@@ -17,9 +17,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+q":
-			return m, tea.Quit
 		case "ctrl+c":
+			return m, tea.Quit
+		case "ctrl+t":
 			m.cursor[0] = 1
 			m.cursor[1] = 0
 			m.cursor[2] = 0
@@ -30,6 +30,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor[2] = 0
 				m.textInput.SetValue("@")
 			}
+		case "ctrl+q":
+			m.cursor[0] = 2
+			m.cursor[1] = 0
+			m.cursor[2] = 0
+			m.textInput.SetValue("@")
 		case "down":
 			if m.cursor[0] == 1 && m.cursor[1] == 1 && m.cursor[2] == 0 {
 				m.createColumn.cursor = (m.createColumn.cursor + 1) % 5
@@ -64,6 +69,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.cursor[2] = (m.cursor[2] + 1) % 4
 				case 1:
 					m.cursor[2] = (m.cursor[2] + 1) % 2
+				}
+			case 2:
+				switch m.cursor[1] {
+				case 0:
+					m.cursor[2] = (m.cursor[2] + 1) % 4
 				}
 			}
 			m.textInput.SetValue("@")
@@ -153,6 +163,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				m.textInput.SetValue(val)
 			}
+			m.textInput.CursorEnd()
+		}
+	case 2:
+		switch m.cursor[1] {
+		case 0:
+			m.textInput.Width = query_section.GetWidth() - width_offset*2
+			if m.textInput.Value() != "@" {
+				m.queryText = m.textInput.Value()
+			}
+			m.textInput.SetValue(m.queryText)
 			m.textInput.CursorEnd()
 		}
 	}

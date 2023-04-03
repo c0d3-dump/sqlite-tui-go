@@ -12,6 +12,7 @@ type Model struct {
 	tableData    TableData
 	createTable  CreateTable
 	createColumn CreateColumn
+	queryText    string
 }
 
 type Table struct {
