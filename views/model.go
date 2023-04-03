@@ -17,14 +17,14 @@ type Model struct {
 
 type Table struct {
 	cursor  int
+	name    string
 	columns []string
-	ids     []string
-	data    TableData
+	ids     []int
+	data    []TableData
 }
 
 type TableData struct {
-	cursor int
-	data   map[string]string
+	data map[string]string
 }
 
 func NewModel() Model {
@@ -35,7 +35,30 @@ func NewModel() Model {
 	return Model{
 		cursor:    []int{0, 0, 0},
 		textInput: ti,
-		tables:    []Table{},
+		tables: []Table{
+			{
+				cursor:  0,
+				name:    "user",
+				columns: []string{"name", "email", "password"},
+				ids:     []int{0, 1},
+				data: []TableData{
+					{
+						data: map[string]string{
+							"name":     "b2b",
+							"email":    "b2b@gmail.com",
+							"password": "1234",
+						},
+					},
+					{
+						data: map[string]string{
+							"name":     "test",
+							"email":    "test@gmail.com",
+							"password": "1234",
+						},
+					},
+				},
+			},
+		},
 		tableData: TableData{},
 		createTable: CreateTable{
 			cursor: 0,

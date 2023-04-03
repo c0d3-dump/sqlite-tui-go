@@ -1,6 +1,8 @@
 package views
 
 import (
+	"strconv"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -32,7 +34,7 @@ func base_view() string {
 	return base_section.Render(
 		lipgloss.NewStyle().
 			AlignHorizontal(lipgloss.Left).
-			Render("There are no tables in db,\nPlease create one by pressing ctrl + t\n - ctrl + t : create table\n - ctrl + q : query tables\n"),
+			Render("- ctrl + t : create table\n- ctrl + q : query tables\n"),
 	)
 }
 
@@ -131,6 +133,21 @@ func query_view(m Model) string {
 		button_style,
 	})
 
+	var ids []string
+	var data []string
+
+	for i, id := range m.tables[0].ids {
+		if m.tables[0].cursor == i {
+			ids = append(ids, ">"+strconv.Itoa(id))
+			for _, col := range m.tables[0].columns {
+				val := m.tables[0].data[i].data
+				data = append(data, col+" : "+val[col])
+			}
+		} else {
+			ids = append(ids, strconv.Itoa(id))
+		}
+	}
+
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
 		lipgloss.JoinHorizontal(
@@ -143,13 +160,13 @@ func query_view(m Model) string {
 			left_section.Render(
 				lipgloss.JoinVertical(
 					lipgloss.Top,
-					"index",
+					ids...,
 				),
 			),
 			right_section.Render(
 				lipgloss.JoinVertical(
 					lipgloss.Top,
-					"data",
+					data...,
 				),
 			),
 		),

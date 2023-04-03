@@ -41,6 +41,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.textInput.SetValue("@")
 			} else if m.cursor[0] == 1 && m.cursor[1] == 0 && m.cursor[2] == 1 {
 				m.createTable.cursor = (m.createTable.cursor + 1) % len(m.createTable.columns)
+			} else if m.cursor[0] == 2 && m.cursor[1] == 0 && m.cursor[2] == 1 {
+				m.tables[0].cursor = (m.tables[0].cursor + 1) % len(m.tables[0].ids)
 			}
 		case "up":
 			if m.cursor[0] == 1 && m.cursor[1] == 1 && m.cursor[2] == 0 {
@@ -53,6 +55,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.createTable.cursor = (m.createTable.cursor - 1) % len(m.createTable.columns)
 				if m.createTable.cursor < 0 {
 					m.createTable.cursor = len(m.createTable.columns) - 1
+				}
+			} else if m.cursor[0] == 2 && m.cursor[1] == 0 && m.cursor[2] == 1 {
+				m.tables[0].cursor = (m.tables[0].cursor + 1) % len(m.tables[0].ids)
+				if m.tables[0].cursor < 0 {
+					m.tables[0].cursor = len(m.tables[0].ids) - 1
 				}
 			}
 		case "right":
