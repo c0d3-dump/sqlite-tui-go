@@ -1,15 +1,18 @@
 package views
 
 import (
+	"sqlite-tui-go/database"
+
 	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 )
 
 type Model struct {
 	cursor       []int
+	d            database.Database
 	textInput    textinput.Model
+	currentTable int
 	tables       []Table
-	tableData    TableData
 	createTable  CreateTable
 	createColumn CreateColumn
 	queryText    string
@@ -20,54 +23,55 @@ type Table struct {
 	name    string
 	columns []string
 	ids     []int
-	data    []TableData
+	data    [][]string
 }
 
-type TableData struct {
-	data map[string]string
-}
-
-func NewModel() Model {
+func NewModel(db database.Database) Model {
 	ti := textinput.New()
 	ti.Focus()
 	ti.Cursor.SetMode(cursor.CursorStatic)
 
+	var tables []Table
+
+	for _, tableName := range db.GetTables() {
+		var cols []string
+
+		for _, tableInfo := range GetTableInfo(db, tableName) {
+			if tableInfo.name != "id" {
+				cols = append(cols, tableInfo.name)
+			}
+		}
+
+		rows := db.ExecQueryRows("SELECT * FROM " + tableName + ";")
+
+		var ids []int
+		var data [][]string
+
+		// colLen := len(cols)
+		for rows.Next() {
+			// TODO: convert it to any to make this code run
+			t := []string{}
+			var cid int
+			rows.Scan(&cid, &t)
+			ids = append(ids, cid)
+			data = append(data, t)
+		}
+
+		tables = append(tables, Table{
+			name:    tableName,
+			columns: cols,
+			ids:     ids,
+			data:    data,
+		})
+	}
+
 	return Model{
-		cursor:    []int{0, 0, 0},
-		textInput: ti,
-		tables: []Table{
-			{
-				cursor:  0,
-				name:    "user",
-				columns: []string{"name", "email", "password"},
-				ids:     []int{0, 1},
-				data: []TableData{
-					{
-						data: map[string]string{
-							"name":     "b2b",
-							"email":    "b2b@gmail.com",
-							"password": "1234",
-						},
-					},
-					{
-						data: map[string]string{
-							"name":     "test",
-							"email":    "test@gmail.com",
-							"password": "1234",
-						},
-					},
-				},
-			},
-		},
-		tableData: TableData{},
-		createTable: CreateTable{
-			cursor: 0,
-			name:   "user",
-			columns: []CreateColumn{
-				{name: "id", dtype: "INT", pk: true},
-				{name: "name", dtype: "TEXT"},
-			},
-		},
+		cursor:       []int{0, 0, 0},
+		d:            db,
+		textInput:    ti,
+		currentTable: 0,
+		tables:       tables,
+		createTable:  CreateTable{},
 		createColumn: CreateColumn{},
 	}
 }

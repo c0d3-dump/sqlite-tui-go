@@ -35,20 +35,34 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cursor[1] = 0
 			m.cursor[2] = 0
 			m.textInput.SetValue("@")
+		case "ctrl+o":
+			if m.cursor[0] == 2 {
+				m.cursor[1] = 1
+				m.cursor[2] = 0
+				m.textInput.SetValue("@")
+			}
+		case "ctrl+a":
+			if m.cursor[0] == 2 {
+				m.cursor[1] = 2
+				m.cursor[2] = 0
+				m.textInput.SetValue("@")
+			}
 		case "down":
 			if m.cursor[0] == 1 && m.cursor[1] == 1 && m.cursor[2] == 0 {
-				m.createColumn.cursor = (m.createColumn.cursor + 1) % 5
+				m.createColumn.cursor = (m.createColumn.cursor + 1) % 4
 				m.textInput.SetValue("@")
 			} else if m.cursor[0] == 1 && m.cursor[1] == 0 && m.cursor[2] == 1 {
 				m.createTable.cursor = (m.createTable.cursor + 1) % len(m.createTable.columns)
 			} else if m.cursor[0] == 2 && m.cursor[1] == 0 && m.cursor[2] == 1 {
 				m.tables[0].cursor = (m.tables[0].cursor + 1) % len(m.tables[0].ids)
+			} else if m.cursor[0] == 2 && m.cursor[1] == 1 {
+				m.currentTable = (m.currentTable + 1) % len(m.tables)
 			}
 		case "up":
 			if m.cursor[0] == 1 && m.cursor[1] == 1 && m.cursor[2] == 0 {
-				m.createColumn.cursor = (m.createColumn.cursor - 1) % 5
+				m.createColumn.cursor = (m.createColumn.cursor - 1) % 4
 				if m.createColumn.cursor < 0 {
-					m.createColumn.cursor = 4
+					m.createColumn.cursor = 3
 				}
 				m.textInput.SetValue("@")
 			} else if m.cursor[0] == 1 && m.cursor[1] == 0 && m.cursor[2] == 1 {
@@ -61,13 +75,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.tables[0].cursor < 0 {
 					m.tables[0].cursor = len(m.tables[0].ids) - 1
 				}
+			} else if m.cursor[0] == 2 && m.cursor[1] == 1 {
+				m.currentTable = (m.currentTable - 1) % len(m.tables)
+				if m.currentTable < 0 {
+					m.currentTable = len(m.tables) - 1
+				}
 			}
 		case "right":
 			boolVal = true
 		case "left":
 			boolVal = false
-		case "ctrl+d":
-			// TODO: delete column and row
 		case "tab":
 			switch m.cursor[0] {
 			case 1:
@@ -91,6 +108,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case 0:
 					switch m.cursor[2] {
 					case 3:
+						m.CreateTable(m.createTable)
 						m.createTable = CreateTable{}
 					}
 				case 1:
@@ -158,17 +176,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.createColumn.dval = m.textInput.Value()
 				}
 				m.textInput.SetValue(m.createColumn.dval)
-			case 4:
-				if m.textInput.Value() != "@" {
-					m.createColumn.pk = boolVal
-				}
-				var val string
-				if m.createColumn.pk {
-					val = "true"
-				} else {
-					val = "false"
-				}
-				m.textInput.SetValue(val)
 			}
 			m.textInput.CursorEnd()
 		}

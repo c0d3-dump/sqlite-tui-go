@@ -11,7 +11,7 @@ type Database struct {
 	db *sql.DB
 }
 
-func (d *Database) InitDatabase(database string) {
+func InitDatabase(database string) Database {
 	db, err := sql.Open("sqlite", database)
 
 	if err != nil {
@@ -19,7 +19,9 @@ func (d *Database) InitDatabase(database string) {
 		log.Fatal("error connecting : ", err)
 	}
 
-	d.db = db
+	return Database{
+		db: db,
+	}
 }
 
 func (d Database) States() sql.DBStats {

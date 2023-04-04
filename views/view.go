@@ -22,19 +22,25 @@ func (m Model) View() string {
 		case 0:
 			return query_view(m)
 		case 1:
-			return select_table_view()
+			return select_table_view(m)
 		case 2:
-			return add_row_view()
+			return add_row_view(m)
 		}
 	}
 	return base_view()
 }
 
 func base_view() string {
+	help := "- ctrl + t : create table\n"
+	help += "\t- ctrl + n : create new column\n"
+	help += "- ctrl + q : query tables\n"
+	help += "\t- ctrl + o : select table\n"
+	help += "\t- ctrl + a : add row\n"
+
 	return base_section.Render(
 		lipgloss.NewStyle().
 			AlignHorizontal(lipgloss.Left).
-			Render("- ctrl + t : create table\n- ctrl + q : query tables\n"),
+			Render(help),
 	)
 }
 
@@ -100,7 +106,6 @@ func create_column_view(m Model) string {
 		"dtype",
 		"notnull (true/false)",
 		"dval",
-		"pk (true/false)",
 	})
 
 	highlight(m.cursor[2], []lipgloss.Style{
@@ -136,12 +141,12 @@ func query_view(m Model) string {
 	var ids []string
 	var data []string
 
-	for i, id := range m.tables[0].ids {
-		if m.tables[0].cursor == i {
+	for i, id := range m.tables[m.currentTable].ids {
+		if m.tables[m.currentTable].cursor == i {
 			ids = append(ids, ">"+strconv.Itoa(id))
-			for _, col := range m.tables[0].columns {
-				val := m.tables[0].data[i].data
-				data = append(data, col+" : "+val[col])
+			for j, col := range m.tables[m.currentTable].columns {
+				val := m.tables[m.currentTable].data[i]
+				data = append(data, col+" : "+val[j])
 			}
 		} else {
 			ids = append(ids, strconv.Itoa(id))
@@ -173,13 +178,33 @@ func query_view(m Model) string {
 	)
 }
 
-func select_table_view() string {
+func select_table_view(m Model) string {
+	var tables []string
+	var tempTable []string
+
+	for _, tbl := range m.tables {
+		tempTable = append(tempTable, tbl.name)
+	}
+
+	for i, table := range tempTable {
+		if m.currentTable == i {
+			tables = append(tables, ">"+table)
+		} else {
+			tables = append(tables, table)
+		}
+	}
+
 	return base_section.Render(
-		create_column_section.Render("select table"),
+		create_column_section.Render(
+			lipgloss.JoinVertical(
+				lipgloss.Top,
+				tables...,
+			),
+		),
 	)
 }
 
-func add_row_view() string {
+func add_row_view(m Model) string {
 	return base_section.Render(
 		create_column_section.Render("add row"),
 	)
@@ -196,7 +221,7 @@ func highlight(focus int, styles []lipgloss.Style) {
 }
 
 func createColumnListSelect(m Model, keys []string) string {
-	t := [5]string{}
+	t := [4]string{}
 
 	for i := range keys {
 		if m.createColumn.cursor == i {
@@ -211,8 +236,6 @@ func createColumnListSelect(m Model, keys []string) string {
 				t[2] = boolToString(m.createColumn.notnull)
 			case 3:
 				t[3] = m.createColumn.dval
-			case 4:
-				t[4] = boolToString(m.createColumn.pk)
 			}
 		}
 	}
