@@ -118,6 +118,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.createColumn = CreateColumn{}
 					}
 				}
+			case 2:
+				switch m.cursor[1] {
+				case 1:
+					m.cursor[1] = 0
+				}
+
 			}
 			m.textInput.SetValue("@")
 		}

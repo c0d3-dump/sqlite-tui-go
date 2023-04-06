@@ -23,7 +23,7 @@ type Table struct {
 	name    string
 	columns []string
 	ids     []int
-	data    [][]string
+	data    [][]any
 }
 
 func NewModel(db database.Database) Model {
@@ -45,16 +45,21 @@ func NewModel(db database.Database) Model {
 		rows := db.ExecQueryRows("SELECT * FROM " + tableName + ";")
 
 		var ids []int
-		var data [][]string
+		var data [][]any
 
-		// colLen := len(cols)
+		colLen := len(cols) + 1
 		for rows.Next() {
 			// TODO: convert it to any to make this code run
-			t := []string{}
-			var cid int
-			rows.Scan(&cid, &t)
-			ids = append(ids, cid)
-			data = append(data, t)
+			t := make([]any, colLen)
+			tptr := make([]any, colLen)
+
+			for i := 0; i < colLen; i++ {
+				tptr[i] = &t[i]
+			}
+
+			rows.Scan(tptr...)
+			ids = append(ids, int(t[0].(int64)))
+			data = append(data, t[1:colLen])
 		}
 
 		tables = append(tables, Table{
@@ -64,6 +69,8 @@ func NewModel(db database.Database) Model {
 			data:    data,
 		})
 	}
+
+	// fmt.Print(tables)
 
 	return Model{
 		cursor:       []int{0, 0, 0},

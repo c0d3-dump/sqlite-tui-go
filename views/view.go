@@ -144,9 +144,9 @@ func query_view(m Model) string {
 	for i, id := range m.tables[m.currentTable].ids {
 		if m.tables[m.currentTable].cursor == i {
 			ids = append(ids, ">"+strconv.Itoa(id))
+			val := m.tables[m.currentTable].data[i]
 			for j, col := range m.tables[m.currentTable].columns {
-				val := m.tables[m.currentTable].data[i]
-				data = append(data, col+" : "+val[j])
+				data = append(data, col+" : "+string(val[j].(string)))
 			}
 		} else {
 			ids = append(ids, strconv.Itoa(id))
