@@ -54,9 +54,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else if m.cursor[0] == 1 && m.cursor[1] == 0 && m.cursor[2] == 1 {
 				m.createTable.cursor = (m.createTable.cursor + 1) % len(m.createTable.columns)
 			} else if m.cursor[0] == 2 && m.cursor[1] == 0 && m.cursor[2] == 1 {
-				m.tables[0].cursor = (m.tables[0].cursor + 1) % len(m.tables[0].ids)
+				m.tables[0].cursor = (m.tables[0].cursor + 1) % len(m.tables[0].data)
 			} else if m.cursor[0] == 2 && m.cursor[1] == 1 {
 				m.currentTable = (m.currentTable + 1) % len(m.tables)
+			} else if m.cursor[0] == 2 && m.cursor[1] == 2 && m.cursor[2] == 0 {
+				m.tables[m.currentTable].addRow.cursor = (m.tables[m.currentTable].addRow.cursor + 1) % (len(m.tables[m.currentTable].columns) - 1)
+				m.textInput.SetValue("@")
 			}
 		case "up":
 			if m.cursor[0] == 1 && m.cursor[1] == 1 && m.cursor[2] == 0 {
@@ -71,15 +74,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.createTable.cursor = len(m.createTable.columns) - 1
 				}
 			} else if m.cursor[0] == 2 && m.cursor[1] == 0 && m.cursor[2] == 1 {
-				m.tables[0].cursor = (m.tables[0].cursor + 1) % len(m.tables[0].ids)
+				m.tables[0].cursor = (m.tables[0].cursor - 1) % len(m.tables[0].data)
 				if m.tables[0].cursor < 0 {
-					m.tables[0].cursor = len(m.tables[0].ids) - 1
+					m.tables[0].cursor = len(m.tables[0].data) - 1
 				}
 			} else if m.cursor[0] == 2 && m.cursor[1] == 1 {
 				m.currentTable = (m.currentTable - 1) % len(m.tables)
 				if m.currentTable < 0 {
 					m.currentTable = len(m.tables) - 1
 				}
+			} else if m.cursor[0] == 2 && m.cursor[1] == 2 && m.cursor[2] == 0 {
+				m.tables[m.currentTable].addRow.cursor = (m.tables[m.currentTable].addRow.cursor - 1) % (len(m.tables[m.currentTable].columns) - 1)
+				if m.tables[m.currentTable].addRow.cursor < 0 {
+					m.tables[m.currentTable].addRow.cursor = len(m.tables[m.currentTable].columns) - 2
+				}
+				m.textInput.SetValue("@")
 			}
 		case "right":
 			boolVal = true
@@ -98,6 +107,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				switch m.cursor[1] {
 				case 0:
 					m.cursor[2] = (m.cursor[2] + 1) % 4
+				case 2:
+					m.cursor[2] = (m.cursor[2] + 1) % 2
 				}
 			}
 			m.textInput.SetValue("@")
@@ -110,6 +121,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					case 3:
 						m.CreateTable(m.createTable)
 						m.createTable = CreateTable{}
+						m.UpdateTable()
 					}
 				case 1:
 					switch m.cursor[2] {
@@ -122,6 +134,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				switch m.cursor[1] {
 				case 1:
 					m.cursor[1] = 0
+				case 2:
+					switch m.cursor[2] {
+					case 1:
+						m.AddRow()
+						m.tables[m.currentTable].addRow = AddRow{
+							cursor: 0,
+							data:   make([]string, len(m.tables[m.currentTable].columns)-1),
+						}
+						m.UpdateTable()
+					}
 				}
 
 			}
@@ -188,11 +210,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case 2:
 		switch m.cursor[1] {
 		case 0:
+			if m.currentTable < 0 {
+				m.cursor[1] = 1
+			}
 			m.textInput.Width = query_section.GetWidth() - width_offset*2
 			if m.textInput.Value() != "@" {
 				m.queryText = m.textInput.Value()
 			}
 			m.textInput.SetValue(m.queryText)
+			m.textInput.CursorEnd()
+		case 2:
+			m.textInput.Width = create_column_section.GetWidth() - width_offset*3
+			addRow := m.tables[m.currentTable].addRow
+			if m.textInput.Value() != "@" {
+				m.tables[m.currentTable].addRow.data[addRow.cursor] = m.textInput.Value()
+			}
+			m.textInput.SetValue(addRow.data[addRow.cursor])
 			m.textInput.CursorEnd()
 		}
 	}

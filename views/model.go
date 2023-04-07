@@ -22,8 +22,14 @@ type Table struct {
 	cursor  int
 	name    string
 	columns []string
-	ids     []int
+	types   []string
 	data    [][]any
+	addRow  AddRow
+}
+
+type AddRow struct {
+	cursor int
+	data   []string
 }
 
 func NewModel(db database.Database) Model {
@@ -31,56 +37,32 @@ func NewModel(db database.Database) Model {
 	ti.Focus()
 	ti.Cursor.SetMode(cursor.CursorStatic)
 
-	var tables []Table
+	tables := GetTables(db)
 
-	for _, tableName := range db.GetTables() {
-		var cols []string
-
-		for _, tableInfo := range GetTableInfo(db, tableName) {
-			if tableInfo.name != "id" {
-				cols = append(cols, tableInfo.name)
-			}
-		}
-
-		rows := db.ExecQueryRows("SELECT * FROM " + tableName + ";")
-
-		var ids []int
-		var data [][]any
-
-		colLen := len(cols) + 1
-		for rows.Next() {
-			// TODO: convert it to any to make this code run
-			t := make([]any, colLen)
-			tptr := make([]any, colLen)
-
-			for i := 0; i < colLen; i++ {
-				tptr[i] = &t[i]
-			}
-
-			rows.Scan(tptr...)
-			ids = append(ids, int(t[0].(int64)))
-			data = append(data, t[1:colLen])
-		}
-
-		tables = append(tables, Table{
-			name:    tableName,
-			columns: cols,
-			ids:     ids,
-			data:    data,
-		})
+	currentTable := -1
+	if len(tables) > 0 {
+		currentTable = 0
 	}
-
-	// fmt.Print(tables)
 
 	return Model{
 		cursor:       []int{0, 0, 0},
 		d:            db,
 		textInput:    ti,
-		currentTable: 0,
+		currentTable: currentTable,
 		tables:       tables,
 		createTable:  CreateTable{},
 		createColumn: CreateColumn{},
 	}
+}
+
+func (m *Model) UpdateTable() {
+	m.tables = GetTables(m.d)
+
+	currentTable := -1
+	if len(m.tables) > 0 {
+		currentTable = 0
+	}
+	m.currentTable = currentTable
 }
 
 type CreateTable struct {

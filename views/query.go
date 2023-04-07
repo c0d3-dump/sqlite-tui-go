@@ -3,6 +3,7 @@ package views
 import (
 	"fmt"
 	"sqlite-tui-go/database"
+	"strings"
 )
 
 type TableInfo struct {
@@ -47,4 +48,63 @@ func (m Model) CreateTable(t CreateTable) {
 	query += ");"
 
 	m.d.ExecStatement(query)
+}
+
+func GetTables(db database.Database) []Table {
+	var tables []Table
+
+	for _, tableName := range db.GetTables() {
+		var cols []string
+		var types []string
+
+		for _, tableInfo := range GetTableInfo(db, tableName) {
+			cols = append(cols, tableInfo.name)
+			types = append(types, tableInfo.dtype)
+		}
+
+		rows := db.ExecQueryRows("SELECT * FROM " + tableName + ";")
+
+		var data [][]any
+
+		colLen := len(cols)
+		for rows.Next() {
+			t := make([]any, colLen)
+			tptr := make([]any, colLen)
+
+			for i := 0; i < colLen; i++ {
+				tptr[i] = &t[i]
+			}
+
+			rows.Scan(tptr...)
+			data = append(data, t)
+		}
+
+		tables = append(tables, Table{
+			name:    tableName,
+			columns: cols,
+			types:   types,
+			data:    data,
+			addRow: AddRow{
+				data: make([]string, colLen-1),
+			},
+		})
+	}
+
+	return tables
+}
+
+func (m Model) AddRow() {
+	table := m.tables[m.currentTable]
+
+	var modifiedData []string
+	for i, d := range table.addRow.data {
+		switch table.types[i+1] {
+		case "TEXT":
+			modifiedData = append(modifiedData, "'"+d+"'")
+		case "INTEGER":
+			modifiedData = append(modifiedData, d)
+		}
+	}
+
+	m.d.ExecStatement("INSERT INTO " + table.name + " (" + strings.Join(table.columns[1:], ",") + ") VALUES (" + strings.Join(modifiedData, ",") + ");")
 }

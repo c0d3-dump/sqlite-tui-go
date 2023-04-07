@@ -1,6 +1,7 @@
 package views
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/charmbracelet/lipgloss"
@@ -141,15 +142,16 @@ func query_view(m Model) string {
 	var ids []string
 	var data []string
 
-	for i, id := range m.tables[m.currentTable].ids {
-		if m.tables[m.currentTable].cursor == i {
-			ids = append(ids, ">"+strconv.Itoa(id))
-			val := m.tables[m.currentTable].data[i]
-			for j, col := range m.tables[m.currentTable].columns {
-				data = append(data, col+" : "+string(val[j].(string)))
+	if m.currentTable >= 0 {
+		for i, val := range m.tables[m.currentTable].data {
+			if m.tables[m.currentTable].cursor == i {
+				ids = append(ids, ">"+strconv.Itoa(i))
+				for j, col := range m.tables[m.currentTable].columns {
+					data = append(data, fmt.Sprintf("%s : %v", col, val[j]))
+				}
+			} else {
+				ids = append(ids, strconv.Itoa(i))
 			}
-		} else {
-			ids = append(ids, strconv.Itoa(id))
 		}
 	}
 
@@ -182,6 +184,12 @@ func select_table_view(m Model) string {
 	var tables []string
 	var tempTable []string
 
+	if len(m.tables) < 1 {
+		return base_section.Render(
+			"there are no tables create one with ctrl+t",
+		)
+	}
+
 	for _, tbl := range m.tables {
 		tempTable = append(tempTable, tbl.name)
 	}
@@ -205,8 +213,41 @@ func select_table_view(m Model) string {
 }
 
 func add_row_view(m Model) string {
+	table := m.tables[m.currentTable]
+	colLen := len(table.columns) - 1
+
+	var t string
+	var temp []string
+
+	for i := 0; i < colLen; i++ {
+		if m.tables[m.currentTable].addRow.cursor == i {
+			t = m.textInput.View()
+		} else {
+			t = m.tables[m.currentTable].addRow.data[i]
+		}
+
+		temp = append(temp, table.columns[i+1])
+		if t != "" {
+			temp = append(temp, text_style.Render(t))
+		}
+	}
+
+	highlight(m.cursor[2], []lipgloss.Style{
+		create_column_section,
+		button_style,
+	})
+
 	return base_section.Render(
-		create_column_section.Render("add row"),
+		lipgloss.JoinVertical(
+			lipgloss.Bottom,
+			create_column_section.Render(
+				lipgloss.JoinVertical(
+					lipgloss.Top,
+					temp...,
+				),
+			),
+			button_style.Render("SUBMIT"),
+		),
 	)
 }
 
