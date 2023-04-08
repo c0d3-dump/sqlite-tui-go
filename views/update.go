@@ -47,6 +47,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor[2] = 0
 				m.textInput.SetValue("@")
 			}
+		case "ctrl+d":
+			if m.cursor[0] == 2 && m.cursor[1] == 0 && m.cursor[2] == 1 {
+				m.RemoveRow()
+				m.UpdateTable()
+			}
 		case "down":
 			if m.cursor[0] == 1 && m.cursor[1] == 1 && m.cursor[2] == 0 {
 				m.createColumn.cursor = (m.createColumn.cursor + 1) % 4

@@ -108,3 +108,10 @@ func (m Model) AddRow() {
 
 	m.d.ExecStatement("INSERT INTO " + table.name + " (" + strings.Join(table.columns[1:], ",") + ") VALUES (" + strings.Join(modifiedData, ",") + ");")
 }
+
+func (m Model) RemoveRow() {
+	table := m.tables[m.currentTable]
+	data := table.data[table.cursor]
+
+	m.d.ExecStatement("DELETE FROM "+table.name+" WHERE id=?;", data[0])
+}
