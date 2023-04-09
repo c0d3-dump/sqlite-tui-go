@@ -37,6 +37,7 @@ func base_view() string {
 	help += "- ctrl + q : query tables\n"
 	help += "\t- ctrl + o : select table\n"
 	help += "\t- ctrl + a : add row\n"
+	help += "\t- ctrl + d : delete row\n"
 
 	return base_section.Render(
 		lipgloss.NewStyle().
@@ -126,23 +127,16 @@ func create_column_view(m Model) string {
 func query_view(m Model) string {
 	var t string
 
-	if m.cursor[2] == 0 {
-		t = m.textInput.View()
-	} else {
-		t = m.queryText
-	}
-
 	highlight(m.cursor[2], []lipgloss.Style{
-		top_section,
 		left_section,
 		right_section,
-		button_style,
 	})
 
 	var ids []string
 	var data []string
 
 	if m.currentTable >= 0 {
+		t = m.tables[m.currentTable].name
 		for i, val := range m.tables[m.currentTable].data {
 			if m.tables[m.currentTable].cursor == i {
 				ids = append(ids, ">"+strconv.Itoa(i))
@@ -157,11 +151,11 @@ func query_view(m Model) string {
 
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
-		lipgloss.JoinHorizontal(
-			lipgloss.Left,
-			top_section.Render(t),
-			button_style.Render("SUBMIT"),
-		),
+		lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#00ff00")).
+			Height(3).
+			PaddingTop(1).
+			Render(t),
 		lipgloss.JoinHorizontal(
 			lipgloss.Left,
 			left_section.Render(
